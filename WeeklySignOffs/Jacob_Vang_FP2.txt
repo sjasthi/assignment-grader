@@ -1,0 +1,15 @@
+Project Title: Assignment Grader (learnandhelp.com)
+
+Team Name: Team 5
+
+Student Name: Jacob Vang
+
+Final Project Iteration Number: 1
+
+Reviewed the weekly progress with the instructor: No
+
+Weekly Contribution:
+
+During this week, I reviewed the Assignment Grader requirements, discussed project ideas with my teammates, and researched how AI can grade assignments using rubrics. I also helped create ideas for the grading prompt.
+
+Did you give the demo of this iteration? No
