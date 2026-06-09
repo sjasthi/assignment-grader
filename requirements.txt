@@ -1,0 +1,12 @@
+Technology Stack:   Front End (HTML, CSS, JS, JQuery, Bootstrap)
+                    Server (PHP)
+                    Backend (MySQL)
+
+Requirements:  1. Manage the list of Classes
+              2. Manage the list of Assignments and the rubrics
+              3. Manage the list of Students
+              4. Students submit an assignment and the system (the web app we are building) will provide instant feedback based on a rubric
+              5. Students have the option of resubmitting the assignment (if the system lets them) or accepts the assignment.
+                                                                          6. Integrtaion into learn and help website.
+
+                                                                          
