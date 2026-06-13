@@ -10,3 +10,6 @@ Requirements:  1. Manage the list of Classes
                                                                           6. Integrtaion into learn and help website.
 
                                                                           
+Team Review:
+
+Our team reviewed and agreed on these requirements for FP2. We discussed the main features of the Assignment Grader system, including classes, assignments, rubrics, students, submissions, feedback, resubmissions, and Learn & Help integration.
