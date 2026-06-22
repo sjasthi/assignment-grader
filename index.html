@@ -2,56 +2,88 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Assignment Grader</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<header>
-    <h1>Assignment Grader System</h1>
-    <p>ICS 499 Capstone Project</p>
+<header class="cs-header">
+    <div class="cs-header-container">
+        <a href="#" class="cs-logo">Assignment Grader</a>
+
+        <nav class="cs-nav">
+            <a href="#">Home</a>
+            <a href="#">Classes</a>
+            <a href="#">Students</a>
+            <a href="#">Assignments</a>
+            <a href="#">Rubrics</a>
+            <a href="#">Submissions</a>
+        </nav>
+
+        <a href="#" class="cs-header-button">Login</a>
+    </div>
 </header>
 
-<nav>
-    <a href="#">Home</a>
-    <a href="#">Classes</a>
-    <a href="#">Students</a>
-    <a href="#">Assignments</a>
-    <a href="#">Rubrics</a>
-    <a href="#">Submissions</a>
-</nav>
+<section id="hero-1618">
+    <div class="cs-container">
 
-<main>
-    <section class="hero">
-        <h2>Welcome to the Assignment Grader</h2>
-        <p>
-            This system will help instructors manage classes, students, assignments,
-            rubrics, and provide feedback on student submissions.
-        </p>
-    </section>
+        <div class="cs-content">
+            <span class="cs-topper">ICS 499 Capstone Project</span>
 
-    <section class="cards">
-        <div class="card">
-            <h3>Manage Classes</h3>
-            <p>Create and organize course sections.</p>
+            <h1 class="cs-title">
+                Assignment Grader System
+            </h1>
+
+            <p class="cs-text">
+                This system helps instructors manage classes, students,
+                assignments, rubrics, and provide feedback on student
+                submissions.
+            </p>
+
+            <a href="#" class="cs-button-solid">
+                Get Started
+            </a>
         </div>
 
-        <div class="card">
-            <h3>Manage Students</h3>
-            <p>Add, view, and manage student information.</p>
-        </div>
+        <ul class="cs-card-group">
+            <li class="cs-item">
+                <h3 class="cs-h3">Manage Classes</h3>
+                <p class="cs-item-text">
+                    Create and organize course sections.
+                </p>
+            </li>
 
-        <div class="card">
-            <h3>Assignments & Rubrics</h3>
-            <p>Create assignments and grading rubrics.</p>
-        </div>
+            <li class="cs-item">
+                <h3 class="cs-h3">Manage Students</h3>
+                <p class="cs-item-text">
+                    Add, view, and manage student information.
+                </p>
+            </li>
 
-        <div class="card">
-            <h3>Feedback</h3>
-            <p>Provide instant feedback based on rubrics.</p>
-        </div>
-    </section>
-</main>
+            <li class="cs-item">
+                <h3 class="cs-h3">Assignments & Rubrics</h3>
+                <p class="cs-item-text">
+                    Create assignments and grading rubrics.
+                </p>
+            </li>
+        </ul>
+
+    </div>
+
+    <picture class="cs-background">
+        <source media="(max-width: 600px)"
+            srcset="https://images.unsplash.com/photo-1552664730-d307ca884978?w=800">
+
+        <source media="(min-width: 601px)"
+            srcset="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600">
+
+        <img
+            src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600"
+            alt="Team Project Meeting">
+    </picture>
+
+</section>
 
 <footer>
     <p>Created by Jacob, Zuhaib, and Suhayb</p>
