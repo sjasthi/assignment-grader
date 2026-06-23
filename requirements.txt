@@ -9,4 +9,8 @@ Requirements:  1. Manage the list of Classes
               5. Students have the option of resubmitting the assignment (if the system lets them) or accepts the assignment.
                                                                           6. Integrtaion into learn and help website.
 
-                                                                          
+
+
+(FP4)  Every student must do full-stack rather than focussing on one aspect (UI or logic or db)
+It is required to adjust the weekly plan to full-stack.
+
