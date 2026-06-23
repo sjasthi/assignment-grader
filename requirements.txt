@@ -14,3 +14,5 @@ Requirements:  1. Manage the list of Classes
 (FP4)  Every student must do full-stack rather than focussing on one aspect (UI or logic or db)
 It is required to adjust the weekly plan to full-stack.
 
+(FP5) What to check? Every student shall be able to demonstrate what they have done in their full=stack functionality.
+
