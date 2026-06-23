@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignment Grader</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="cs-header">
+    <div class="cs-header-container">
+
+```
+    <a href="index.php" class="cs-logo">
+        Assignment Grader
+    </a>
+
+    <nav class="cs-nav">
+        <a href="index.php">Home</a>
+        <a href="classes.php">Classes</a>
+        <a href="students.php">Students</a>
+        <a href="assignments.php">Assignments</a>
+        <a href="rubrics.php">Rubrics</a>
+        <a href="submissions.php">Submissions</a>
+    </nav>
+
+    <a href="#" class="cs-header-button">Login</a>
+
+</div>
+```
+
+</header>
+
+<section id="hero-1618">
+
+```
+<div class="cs-container">
+
+    <div class="cs-content">
+
+        <span class="cs-topper">
+            ICS 499 Capstone Project
+        </span>
+
+        <h1 class="cs-title">
+            Assignment Grader System
+        </h1>
+
+        <p class="cs-text">
+            This system helps instructors manage classes, students,
+            assignments, rubrics, and provide feedback on student
+            submissions.
+        </p>
+
+        <a href="classes.php" class="cs-button-solid">
+            Get Started
+        </a>
+
+    </div>
+
+    <ul class="cs-card-group">
+
+        <li class="cs-item">
+            <h3 class="cs-h3">Manage Classes</h3>
+            <p class="cs-item-text">
+                Create and organize course sections.
+            </p>
+        </li>
+
+        <li class="cs-item">
+            <h3 class="cs-h3">Manage Students</h3>
+            <p class="cs-item-text">
+                Add, view, and manage student information.
+            </p>
+        </li>
+
+        <li class="cs-item">
+            <h3 class="cs-h3">Assignments & Rubrics</h3>
+            <p class="cs-item-text">
+                Create assignments and grading rubrics.
+            </p>
+        </li>
+
+    </ul>
+
+</div>
+
+<picture class="cs-background">
+
+    <source
+        media="(max-width: 600px)"
+        srcset="https://images.unsplash.com/photo-1552664730-d307ca884978?w=800">
+
+    <source
+        media="(min-width: 601px)"
+        srcset="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600">
+
+    <img
+        src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600"
+        alt="Team Project Meeting">
+
+</picture>
+```
+
+</section>
+
+<footer>
+    <p>Created by Jacob, Zuhaib, and Suhayb</p>
+</footer>
+
+</body>
+</html>
