@@ -362,3 +362,17 @@ th {
 td {
     background-color: #fafafa;
 }
+
+/* Page Sections for PHP Pages */
+.page-section {
+    padding: 140px 10% 60px;
+    background-color: #f5f7fb;
+    min-height: 80vh;
+}
+
+select {
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
+}
