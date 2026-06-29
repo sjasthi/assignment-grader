@@ -16,3 +16,5 @@ It is required to adjust the weekly plan to full-stack.
 
 (FP5) What to check? Every student shall be able to demonstrate what they have done in their full=stack functionality.
 
+(FP6) llm should produce output / prompt, model, assignment, rubric
+
