@@ -18,25 +18,25 @@ Requirements:
 6. Learn and Help Integration
 
 
-  Jacob
+  Jacob:
 ├── Classes
 └── Students
 
         
 
-Zuhaib
+Zuhaib:
 ├── Assignments
 └── Rubrics
 
         
 
-Suhayb
+Suhayb:
 ├── Submissions
 └── Feedback / Grading
 
         
 
-Entire Team
+Entire Team:
 ├── Integration
 ├── Testing
 ├── Bug Fixes
