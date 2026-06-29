@@ -19,20 +19,20 @@ Requirements:
 
 
   Jacob:
-├── Classes
-└── Students
+- Classes
+-  Students
 
         
 
 Zuhaib:
-├── Assignments
-└── Rubrics
+- Assignments
+- Rubrics
 
         
 
 Suhayb:
-├── Submissions
-└── Feedback / Grading
+- Submissions
+-  Feedback / Grading
 
         
 
