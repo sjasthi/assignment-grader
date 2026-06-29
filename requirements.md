@@ -22,19 +22,19 @@ Requirements:
 ├── Classes
 └── Students
 
-        ↓
+        
 
 Zuhaib
 ├── Assignments
 └── Rubrics
 
-        ↓
+        
 
 Suhayb
 ├── Submissions
 └── Feedback / Grading
 
-        ↓
+        
 
 Entire Team
 ├── Integration
