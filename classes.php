@@ -118,8 +118,60 @@ $result = mysqli_query($conn, "SELECT * FROM classes");
 
 </section>
 
-<footer>
-    <p>Created by Jacob, Zuhaib, and Suhayb</p>
+<footer id="cs-footer-1292">
+    <div class="cs-container">      
+
+        <div class="cs-logo-group">
+            <a class="cs-footer-logo" href="index.php">
+                Assignment Grader
+            </a>
+
+            <p class="cs-text">
+                A web app for managing classes, students, assignments, rubrics, submissions, and feedback.
+            </p>
+
+            <a href="mailto:info@assignmentgrader.com" class="cs-link">
+                info@assignmentgrader.com
+            </a>
+        </div>
+
+        <ul class="cs-footer-nav">
+            <li><span class="cs-footer-header">System</span></li>
+            <li><a class="cs-footer-nav-link" href="classes.php">Classes</a></li>
+            <li><a class="cs-footer-nav-link" href="students.php">Students</a></li>
+            <li><a class="cs-footer-nav-link" href="assignments.php">Assignments</a></li>
+            <li><a class="cs-footer-nav-link" href="rubrics.php">Rubrics</a></li>
+        </ul>
+
+        <ul class="cs-footer-nav">
+            <li><span class="cs-footer-header">Project</span></li>
+            <li><a class="cs-footer-nav-link" href="index.php">Home</a></li>
+            <li><a class="cs-footer-nav-link" href="#">ICS 499</a></li>
+            <li><a class="cs-footer-nav-link" href="#">Capstone</a></li>
+            <li><a class="cs-footer-nav-link" href="#">Learn and Help</a></li>
+        </ul>
+
+        <ul class="cs-footer-nav">
+            <li><span class="cs-footer-header">Team</span></li>
+            <li><a class="cs-footer-nav-link" href="#">Jacob</a></li>
+            <li><a class="cs-footer-nav-link" href="#">Zuhaib</a></li>
+            <li><a class="cs-footer-nav-link" href="#">Suhayb</a></li>
+        </ul>
+
+    </div>
+
+    <div class="cs-bottom">
+        <span class="cs-copyright">
+            Copyright © 2026.
+            <a class="cs-copyright-link" href="index.php">Assignment Grader.</a>
+            All Rights Reserved.
+        </span>
+
+        <a href="#" class="cs-copyright-link">Terms of Service</a>
+        <a href="#" class="cs-copyright-link">Privacy Policy</a>
+    </div>
+
+    <div class="cs-floater" aria-hidden="true"></div>
 </footer>
 
 </body>

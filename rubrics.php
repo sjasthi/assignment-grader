@@ -4,29 +4,27 @@ ini_set('display_errors', 1);
 
 include 'db.php';
 
-if (isset($_POST['add_student'])) {
-    $class_id = $_POST['class_id'];
-    $first_name = $_POST['first_name'];
-    $last_name = $_POST['last_name'];
-    $email = $_POST['email'];
+if (isset($_POST['add_rubric'])) {
+    $assignment_id = $_POST['assignment_id'];
+    $criterion = $_POST['criterion'];
+    $points = $_POST['points'];
 
-    $sql = "INSERT INTO students (class_id, first_name, last_name, email)
-            VALUES ('$class_id', '$first_name', '$last_name', '$email')";
+    $sql = "INSERT INTO rubrics (assignment_id, criterion, points)
+            VALUES ('$assignment_id', '$criterion', '$points')";
 
     mysqli_query($conn, $sql);
 }
 
-$classes = mysqli_query($conn, "SELECT * FROM classes");
+$assignments = mysqli_query($conn, "SELECT * FROM assignments");
 
-$students = mysqli_query($conn, "
-    SELECT students.student_id,
-           students.first_name,
-           students.last_name,
-           students.email,
-           classes.class_name
-    FROM students
-    LEFT JOIN classes
-    ON students.class_id = classes.id
+$rubrics = mysqli_query($conn, "
+    SELECT rubrics.id,
+           rubrics.criterion,
+           rubrics.points,
+           assignments.assignment_name
+    FROM rubrics
+    LEFT JOIN assignments
+    ON rubrics.assignment_id = assignments.id
 ");
 ?>
 
@@ -35,7 +33,7 @@ $students = mysqli_query($conn, "
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Students</title>
+    <title>Manage Rubrics</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -62,56 +60,53 @@ $students = mysqli_query($conn, "
 </header>
 
 <section class="page-section">
-    <h2>Manage Students</h2>
-    <p>Add and view students in the Assignment Grader System.</p>
+    <h2>Manage Rubrics</h2>
+    <p>Create and view rubric criteria for each assignment.</p>
 
     <div class="form-box">
-        <h3>Add New Student</h3>
+        <h3>Add New Rubric Criterion</h3>
 
         <form method="POST">
 
-            <label>Class</label>
-            <select name="class_id" required>
-                <option value="">Select Class</option>
+            <label>Assignment</label>
+            <select name="assignment_id" required>
+                <option value="">Select Assignment</option>
 
-                <?php while ($class = mysqli_fetch_assoc($classes)) { ?>
-                    <option value="<?php echo $class['id']; ?>">
-                        <?php echo $class['class_name']; ?>
+                <?php while ($assignment = mysqli_fetch_assoc($assignments)) { ?>
+                    <option value="<?php echo $assignment['id']; ?>">
+                        <?php echo $assignment['assignment_name']; ?>
                     </option>
                 <?php } ?>
             </select>
 
-            <label>First Name</label>
-            <input type="text" name="first_name" placeholder="Example: Jacob" required>
+            <label>Criterion</label>
+            <input type="text" name="criterion" placeholder="Example: Correctness" required>
 
-            <label>Last Name</label>
-            <input type="text" name="last_name" placeholder="Example: Vang" required>
+            <label>Points</label>
+            <input type="number" name="points" placeholder="Example: 50" required>
 
-            <label>Email</label>
-            <input type="email" name="email" placeholder="Example: student@email.com">
-
-            <button type="submit" name="add_student">Add Student</button>
+            <button type="submit" name="add_rubric">
+                Add Rubric
+            </button>
 
         </form>
     </div>
 
     <div class="table-box">
-        <h3>Student List</h3>
+        <h3>Rubric List</h3>
 
         <table>
             <tr>
-                <th>Class</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Email</th>
+                <th>Assignment</th>
+                <th>Criterion</th>
+                <th>Points</th>
             </tr>
 
-            <?php while ($row = mysqli_fetch_assoc($students)) { ?>
+            <?php while ($row = mysqli_fetch_assoc($rubrics)) { ?>
                 <tr>
-                    <td><?php echo $row['class_name']; ?></td>
-                    <td><?php echo $row['first_name']; ?></td>
-                    <td><?php echo $row['last_name']; ?></td>
-                    <td><?php echo $row['email']; ?></td>
+                    <td><?php echo $row['assignment_name']; ?></td>
+                    <td><?php echo $row['criterion']; ?></td>
+                    <td><?php echo $row['points']; ?></td>
                 </tr>
             <?php } ?>
 

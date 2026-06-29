@@ -4,29 +4,33 @@ ini_set('display_errors', 1);
 
 include 'db.php';
 
-if (isset($_POST['add_student'])) {
-    $class_id = $_POST['class_id'];
-    $first_name = $_POST['first_name'];
-    $last_name = $_POST['last_name'];
-    $email = $_POST['email'];
+if (isset($_POST['add_submission'])) {
+    $student_id = $_POST['student_id'];
+    $assignment_id = $_POST['assignment_id'];
+    $submission_text = $_POST['submission_text'];
 
-    $sql = "INSERT INTO students (class_id, first_name, last_name, email)
-            VALUES ('$class_id', '$first_name', '$last_name', '$email')";
+    $sql = "INSERT INTO submissions (student_id, assignment_id, submission_text)
+            VALUES ('$student_id', '$assignment_id', '$submission_text')";
 
     mysqli_query($conn, $sql);
 }
 
-$classes = mysqli_query($conn, "SELECT * FROM classes");
+$students = mysqli_query($conn, "SELECT * FROM students");
+$assignments = mysqli_query($conn, "SELECT * FROM assignments");
 
-$students = mysqli_query($conn, "
-    SELECT students.student_id,
+$submissions = mysqli_query($conn, "
+    SELECT submissions.id,
+           submissions.submission_text,
+           submissions.submitted_at,
+           submissions.status,
            students.first_name,
            students.last_name,
-           students.email,
-           classes.class_name
-    FROM students
-    LEFT JOIN classes
-    ON students.class_id = classes.id
+           assignments.assignment_name
+    FROM submissions
+    LEFT JOIN students
+    ON submissions.student_id = students.student_id
+    LEFT JOIN assignments
+    ON submissions.assignment_id = assignments.id
 ");
 ?>
 
@@ -35,7 +39,7 @@ $students = mysqli_query($conn, "
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Students</title>
+    <title>Manage Submissions</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -62,56 +66,65 @@ $students = mysqli_query($conn, "
 </header>
 
 <section class="page-section">
-    <h2>Manage Students</h2>
-    <p>Add and view students in the Assignment Grader System.</p>
+    <h2>Manage Submissions</h2>
+    <p>Students can submit assignment work for review and feedback.</p>
 
     <div class="form-box">
-        <h3>Add New Student</h3>
+        <h3>Add New Submission</h3>
 
         <form method="POST">
 
-            <label>Class</label>
-            <select name="class_id" required>
-                <option value="">Select Class</option>
+            <label>Student</label>
+            <select name="student_id" required>
+                <option value="">Select Student</option>
 
-                <?php while ($class = mysqli_fetch_assoc($classes)) { ?>
-                    <option value="<?php echo $class['id']; ?>">
-                        <?php echo $class['class_name']; ?>
+                <?php while ($student = mysqli_fetch_assoc($students)) { ?>
+                    <option value="<?php echo $student['student_id']; ?>">
+                        <?php echo $student['first_name'] . " " . $student['last_name']; ?>
                     </option>
                 <?php } ?>
             </select>
 
-            <label>First Name</label>
-            <input type="text" name="first_name" placeholder="Example: Jacob" required>
+            <label>Assignment</label>
+            <select name="assignment_id" required>
+                <option value="">Select Assignment</option>
 
-            <label>Last Name</label>
-            <input type="text" name="last_name" placeholder="Example: Vang" required>
+                <?php while ($assignment = mysqli_fetch_assoc($assignments)) { ?>
+                    <option value="<?php echo $assignment['id']; ?>">
+                        <?php echo $assignment['assignment_name']; ?>
+                    </option>
+                <?php } ?>
+            </select>
 
-            <label>Email</label>
-            <input type="email" name="email" placeholder="Example: student@email.com">
+            <label>Submission Text</label>
+            <textarea name="submission_text" placeholder="Paste the student assignment submission here..." required></textarea>
 
-            <button type="submit" name="add_student">Add Student</button>
+            <button type="submit" name="add_submission">
+                Submit
+            </button>
 
         </form>
     </div>
 
     <div class="table-box">
-        <h3>Student List</h3>
+        <h3>Submission List</h3>
 
         <table>
             <tr>
-                <th>Class</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Email</th>
+                <th>Student</th>
+                <th>Assignment</th>
+                <th>Submission</th>
+                <th>Submitted At</th>
+                <th>Status</th>
             </tr>
 
-            <?php while ($row = mysqli_fetch_assoc($students)) { ?>
+            <?php while ($row = mysqli_fetch_assoc($submissions)) { ?>
                 <tr>
-                    <td><?php echo $row['class_name']; ?></td>
-                    <td><?php echo $row['first_name']; ?></td>
-                    <td><?php echo $row['last_name']; ?></td>
-                    <td><?php echo $row['email']; ?></td>
+                    <td><?php echo $row['first_name'] . " " . $row['last_name']; ?></td>
+                    <td><?php echo $row['assignment_name']; ?></td>
+                    <td><?php echo $row['submission_text']; ?></td>
+                    <td><?php echo $row['submitted_at']; ?></td>
+                    <td><?php echo $row['status']; ?></td>
                 </tr>
             <?php } ?>
 

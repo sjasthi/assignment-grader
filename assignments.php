@@ -4,29 +4,31 @@ ini_set('display_errors', 1);
 
 include 'db.php';
 
-if (isset($_POST['add_student'])) {
+if (isset($_POST['add_assignment'])) {
     $class_id = $_POST['class_id'];
-    $first_name = $_POST['first_name'];
-    $last_name = $_POST['last_name'];
-    $email = $_POST['email'];
+    $assignment_name = $_POST['assignment_name'];
+    $description = $_POST['description'];
+    $due_date = $_POST['due_date'];
+    $points = $_POST['points'];
 
-    $sql = "INSERT INTO students (class_id, first_name, last_name, email)
-            VALUES ('$class_id', '$first_name', '$last_name', '$email')";
+    $sql = "INSERT INTO assignments (class_id, assignment_name, description, due_date, points)
+            VALUES ('$class_id', '$assignment_name', '$description', '$due_date', '$points')";
 
     mysqli_query($conn, $sql);
 }
 
 $classes = mysqli_query($conn, "SELECT * FROM classes");
 
-$students = mysqli_query($conn, "
-    SELECT students.student_id,
-           students.first_name,
-           students.last_name,
-           students.email,
+$assignments = mysqli_query($conn, "
+    SELECT assignments.id,
+           assignments.assignment_name,
+           assignments.description,
+           assignments.due_date,
+           assignments.points,
            classes.class_name
-    FROM students
+    FROM assignments
     LEFT JOIN classes
-    ON students.class_id = classes.id
+    ON assignments.class_id = classes.id
 ");
 ?>
 
@@ -35,7 +37,7 @@ $students = mysqli_query($conn, "
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Students</title>
+    <title>Manage Assignments</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -62,11 +64,11 @@ $students = mysqli_query($conn, "
 </header>
 
 <section class="page-section">
-    <h2>Manage Students</h2>
-    <p>Add and view students in the Assignment Grader System.</p>
+    <h2>Manage Assignments</h2>
+    <p>Create and view assignments for each class.</p>
 
     <div class="form-box">
-        <h3>Add New Student</h3>
+        <h3>Add New Assignment</h3>
 
         <form method="POST">
 
@@ -81,37 +83,44 @@ $students = mysqli_query($conn, "
                 <?php } ?>
             </select>
 
-            <label>First Name</label>
-            <input type="text" name="first_name" placeholder="Example: Jacob" required>
+            <label>Assignment Name</label>
+            <input type="text" name="assignment_name" placeholder="Example: Homework 1" required>
 
-            <label>Last Name</label>
-            <input type="text" name="last_name" placeholder="Example: Vang" required>
+            <label>Description</label>
+            <input type="text" name="description" placeholder="Example: Complete Chapter 1 questions">
 
-            <label>Email</label>
-            <input type="email" name="email" placeholder="Example: student@email.com">
+            <label>Due Date</label>
+            <input type="date" name="due_date" required>
 
-            <button type="submit" name="add_student">Add Student</button>
+            <label>Points</label>
+            <input type="number" name="points" placeholder="Example: 100" required>
+
+            <button type="submit" name="add_assignment">
+                Add Assignment
+            </button>
 
         </form>
     </div>
 
     <div class="table-box">
-        <h3>Student List</h3>
+        <h3>Assignment List</h3>
 
         <table>
             <tr>
                 <th>Class</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Email</th>
+                <th>Assignment</th>
+                <th>Description</th>
+                <th>Due Date</th>
+                <th>Points</th>
             </tr>
 
-            <?php while ($row = mysqli_fetch_assoc($students)) { ?>
+            <?php while ($row = mysqli_fetch_assoc($assignments)) { ?>
                 <tr>
                     <td><?php echo $row['class_name']; ?></td>
-                    <td><?php echo $row['first_name']; ?></td>
-                    <td><?php echo $row['last_name']; ?></td>
-                    <td><?php echo $row['email']; ?></td>
+                    <td><?php echo $row['assignment_name']; ?></td>
+                    <td><?php echo $row['description']; ?></td>
+                    <td><?php echo $row['due_date']; ?></td>
+                    <td><?php echo $row['points']; ?></td>
                 </tr>
             <?php } ?>
 
