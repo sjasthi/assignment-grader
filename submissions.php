@@ -4,22 +4,87 @@ ini_set('display_errors', 1);
 
 include 'db.php';
 
+$message = "";
+
+/* ADD SUBMISSION */
 if (isset($_POST['add_submission'])) {
     $student_id = $_POST['student_id'];
     $assignment_id = $_POST['assignment_id'];
-    $submission_text = $_POST['submission_text'];
+    $submission_text = trim($_POST['submission_text']);
 
-    $sql = "INSERT INTO submissions (student_id, assignment_id, submission_text)
-            VALUES ('$student_id', '$assignment_id', '$submission_text')";
+    if (!empty($student_id) && !empty($assignment_id) && !empty($submission_text)) {
+        $sql = "INSERT INTO submissions (student_id, assignment_id, submission_text)
+                VALUES ('$student_id', '$assignment_id', '$submission_text')";
 
-    mysqli_query($conn, $sql);
+        if (mysqli_query($conn, $sql)) {
+            $message = "Submission added successfully.";
+        } else {
+            $message = "Error adding submission.";
+        }
+    } else {
+        $message = "Please fill in all fields.";
+    }
 }
 
+/* DELETE SUBMISSION */
+if (isset($_GET['delete'])) {
+    $id = $_GET['delete'];
+
+    $sql = "DELETE FROM submissions WHERE id = $id";
+
+    if (mysqli_query($conn, $sql)) {
+        $message = "Submission deleted successfully.";
+    } else {
+        $message = "Error deleting submission.";
+    }
+}
+
+/* GET SUBMISSION FOR EDIT */
+$edit_submission = null;
+
+if (isset($_GET['edit'])) {
+    $id = $_GET['edit'];
+
+    $edit_result = mysqli_query($conn, "SELECT * FROM submissions WHERE id = $id");
+    $edit_submission = mysqli_fetch_assoc($edit_result);
+}
+
+/* UPDATE SUBMISSION */
+if (isset($_POST['update_submission'])) {
+    $id = $_POST['id'];
+    $student_id = $_POST['student_id'];
+    $assignment_id = $_POST['assignment_id'];
+    $submission_text = trim($_POST['submission_text']);
+
+    if (!empty($student_id) && !empty($assignment_id) && !empty($submission_text)) {
+        $sql = "UPDATE submissions
+                SET student_id = '$student_id',
+                    assignment_id = '$assignment_id',
+                    submission_text = '$submission_text'
+                WHERE id = $id";
+
+        if (mysqli_query($conn, $sql)) {
+            $message = "Submission updated successfully.";
+            $edit_submission = null;
+        } else {
+            $message = "Error updating submission.";
+        }
+    } else {
+        $message = "Please fill in all fields.";
+    }
+}
+
+/* GET STUDENTS */
 $students = mysqli_query($conn, "SELECT * FROM students");
+
+/* GET ASSIGNMENTS */
 $assignments = mysqli_query($conn, "SELECT * FROM assignments");
 
+/* GET SUBMISSIONS */
 $submissions = mysqli_query($conn, "
     SELECT submissions.id,
+           submissions.student_id,
+           submissions.assignment_id,
            submissions.submission_text,
            submissions.submitted_at,
            submissions.status,
@@ -47,9 +112,7 @@ $submissions = mysqli_query($conn, "
 <header class="cs-header">
     <div class="cs-header-container">
 
-        <a href="index.php" class="cs-logo">
-            Assignment Grader
-        </a>
+        <a href="index.php" class="cs-logo">Assignment Grader</a>
 
         <nav class="cs-nav">
             <a href="index.php">Home</a>
@@ -69,41 +132,98 @@ $submissions = mysqli_query($conn, "
     <h2>Manage Submissions</h2>
     <p>Students can submit assignment work for review and feedback.</p>
 
+    <?php if (!empty($message)) { ?>
+        <p><strong><?php echo $message; ?></strong></p>
+    <?php } ?>
+
     <div class="form-box">
-        <h3>Add New Submission</h3>
 
-        <form method="POST">
+        <?php if ($edit_submission) { ?>
 
-            <label>Student</label>
-            <select name="student_id" required>
-                <option value="">Select Student</option>
+            <h3>Edit Submission</h3>
 
-                <?php while ($student = mysqli_fetch_assoc($students)) { ?>
-                    <option value="<?php echo $student['student_id']; ?>">
-                        <?php echo $student['first_name'] . " " . $student['last_name']; ?>
-                    </option>
-                <?php } ?>
-            </select>
+            <form method="POST">
 
-            <label>Assignment</label>
-            <select name="assignment_id" required>
-                <option value="">Select Assignment</option>
+                <input type="hidden" name="id" value="<?php echo $edit_submission['id']; ?>">
 
-                <?php while ($assignment = mysqli_fetch_assoc($assignments)) { ?>
-                    <option value="<?php echo $assignment['id']; ?>">
-                        <?php echo $assignment['assignment_name']; ?>
-                    </option>
-                <?php } ?>
-            </select>
+                <label>Student</label>
+                <select name="student_id" required>
+                    <option value="">Select Student</option>
 
-            <label>Submission Text</label>
-            <textarea name="submission_text" placeholder="Paste the student assignment submission here..." required></textarea>
+                    <?php while ($student = mysqli_fetch_assoc($students)) { ?>
+                        <option 
+                            value="<?php echo $student['student_id']; ?>"
+                            <?php if ($student['student_id'] == $edit_submission['student_id']) echo "selected"; ?>
+                        >
+                            <?php echo $student['first_name'] . " " . $student['last_name']; ?>
+                        </option>
+                    <?php } ?>
+                </select>
 
-            <button type="submit" name="add_submission">
-                Submit
-            </button>
+                <label>Assignment</label>
+                <select name="assignment_id" required>
+                    <option value="">Select Assignment</option>
 
-        </form>
+                    <?php while ($assignment = mysqli_fetch_assoc($assignments)) { ?>
+                        <option 
+                            value="<?php echo $assignment['id']; ?>"
+                            <?php if ($assignment['id'] == $edit_submission['assignment_id']) echo "selected"; ?>
+                        >
+                            <?php echo $assignment['assignment_name']; ?>
+                        </option>
+                    <?php } ?>
+                </select>
+
+                <label>Submission Text</label>
+                <textarea name="submission_text" required><?php echo $edit_submission['submission_text']; ?></textarea>
+
+                <button type="submit" name="update_submission">
+                    Update Submission
+                </button>
+
+                <a href="submissions.php">Cancel</a>
+
+            </form>
+
+        <?php } else { ?>
+
+            <h3>Add New Submission</h3>
+
+            <form method="POST">
+
+                <label>Student</label>
+                <select name="student_id" required>
+                    <option value="">Select Student</option>
+
+                    <?php while ($student = mysqli_fetch_assoc($students)) { ?>
+                        <option value="<?php echo $student['student_id']; ?>">
+                            <?php echo $student['first_name'] . " " . $student['last_name']; ?>
+                        </option>
+                    <?php } ?>
+                </select>
+
+                <label>Assignment</label>
+                <select name="assignment_id" required>
+                    <option value="">Select Assignment</option>
+
+                    <?php while ($assignment = mysqli_fetch_assoc($assignments)) { ?>
+                        <option value="<?php echo $assignment['id']; ?>">
+                            <?php echo $assignment['assignment_name']; ?>
+                        </option>
+                    <?php } ?>
+                </select>
+
+                <label>Submission Text</label>
+                <textarea name="submission_text" placeholder="Paste the student assignment submission here..." required></textarea>
+
+                <button type="submit" name="add_submission">
+                    Submit
+                </button>
+
+            </form>
+
+        <?php } ?>
+
     </div>
 
     <div class="table-box">
@@ -116,6 +236,7 @@ $submissions = mysqli_query($conn, "
                 <th>Submission</th>
                 <th>Submitted At</th>
                 <th>Status</th>
+                <th>Actions</th>
             </tr>
 
             <?php while ($row = mysqli_fetch_assoc($submissions)) { ?>
@@ -125,68 +246,22 @@ $submissions = mysqli_query($conn, "
                     <td><?php echo $row['submission_text']; ?></td>
                     <td><?php echo $row['submitted_at']; ?></td>
                     <td><?php echo $row['status']; ?></td>
+                    <td>
+                        <a href="submissions.php?edit=<?php echo $row['id']; ?>">Edit</a>
+                        |
+                        <a 
+                            href="submissions.php?delete=<?php echo $row['id']; ?>"
+                            onclick="return confirm('Are you sure you want to delete this submission?');"
+                        >
+                            Delete
+                        </a>
+                    </td>
                 </tr>
             <?php } ?>
 
         </table>
     </div>
 </section>
-
-<footer id="cs-footer-1292">
-    <div class="cs-container">      
-
-        <div class="cs-logo-group">
-            <a class="cs-footer-logo" href="index.php">
-                Assignment Grader
-            </a>
-
-            <p class="cs-text">
-                A web app for managing classes, students, assignments, rubrics, submissions, and feedback.
-            </p>
-
-            <a href="mailto:info@assignmentgrader.com" class="cs-link">
-                info@assignmentgrader.com
-            </a>
-        </div>
-
-        <ul class="cs-footer-nav">
-            <li><span class="cs-footer-header">System</span></li>
-            <li><a class="cs-footer-nav-link" href="classes.php">Classes</a></li>
-            <li><a class="cs-footer-nav-link" href="students.php">Students</a></li>
-            <li><a class="cs-footer-nav-link" href="assignments.php">Assignments</a></li>
-            <li><a class="cs-footer-nav-link" href="rubrics.php">Rubrics</a></li>
-        </ul>
-
-        <ul class="cs-footer-nav">
-            <li><span class="cs-footer-header">Project</span></li>
-            <li><a class="cs-footer-nav-link" href="index.php">Home</a></li>
-            <li><a class="cs-footer-nav-link" href="#">ICS 499</a></li>
-            <li><a class="cs-footer-nav-link" href="#">Capstone</a></li>
-            <li><a class="cs-footer-nav-link" href="#">Learn and Help</a></li>
-        </ul>
-
-        <ul class="cs-footer-nav">
-            <li><span class="cs-footer-header">Team</span></li>
-            <li><a class="cs-footer-nav-link" href="#">Jacob</a></li>
-            <li><a class="cs-footer-nav-link" href="#">Zuhaib</a></li>
-            <li><a class="cs-footer-nav-link" href="#">Suhayb</a></li>
-        </ul>
-
-    </div>
-
-    <div class="cs-bottom">
-        <span class="cs-copyright">
-            Copyright © 2026.
-            <a class="cs-copyright-link" href="index.php">Assignment Grader.</a>
-            All Rights Reserved.
-        </span>
-
-        <a href="#" class="cs-copyright-link">Terms of Service</a>
-        <a href="#" class="cs-copyright-link">Privacy Policy</a>
-    </div>
-
-    <div class="cs-floater" aria-hidden="true"></div>
-</footer>
 
 </body>
 </html>

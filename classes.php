@@ -4,16 +4,78 @@ ini_set('display_errors', 1);
 
 include 'db.php';
 
+$message = "";
+
+/* ADD CLASS */
 if (isset($_POST['add_class'])) {
-    $class_name = $_POST['class_name'];
-    $instructor_name = $_POST['instructor_name'];
+    $class_name = trim($_POST['class_name']);
+    $instructor_name = trim($_POST['instructor_name']);
 
-    $sql = "INSERT INTO classes (class_name, instructor_name)
-            VALUES ('$class_name', '$instructor_name')";
+    if (!empty($class_name) && !empty($instructor_name)) {
+        $sql = "INSERT INTO classes (class_name, instructor_name)
+                VALUES ('$class_name', '$instructor_name')";
 
-    mysqli_query($conn, $sql);
+        if (mysqli_query($conn, $sql)) {
+            $message = "Class added successfully.";
+        } else {
+            $message = "Error adding class.";
+        }
+    } else {
+        $message = "Please fill in all fields.";
+    }
 }
 
+/* DELETE CLASS */
+if (isset($_GET['delete'])) {
+    $id = $_GET['delete'];
+
+    // First delete students in this class
+    mysqli_query($conn, "DELETE FROM students WHERE class_id = $id");
+
+    // Then delete the class
+    $sql = "DELETE FROM classes WHERE id = $id";
+
+    if (mysqli_query($conn, $sql)) {
+        $message = "Class and assigned students deleted successfully.";
+    } else {
+        $message = "Error deleting class.";
+    }
+}
+
+/* GET CLASS FOR EDIT */
+$edit_class = null;
+
+if (isset($_GET['edit'])) {
+    $id = $_GET['edit'];
+
+    $edit_result = mysqli_query($conn, "SELECT * FROM classes WHERE id = $id");
+    $edit_class = mysqli_fetch_assoc($edit_result);
+}
+
+/* UPDATE CLASS */
+if (isset($_POST['update_class'])) {
+    $id = $_POST['id'];
+    $class_name = trim($_POST['class_name']);
+    $instructor_name = trim($_POST['instructor_name']);
+
+    if (!empty($class_name) && !empty($instructor_name)) {
+        $sql = "UPDATE classes 
+                SET class_name = '$class_name',
+                    instructor_name = '$instructor_name'
+                WHERE id = $id";
+
+        if (mysqli_query($conn, $sql)) {
+            $message = "Class updated successfully.";
+            $edit_class = null;
+        } else {
+            $message = "Error updating class.";
+        }
+    } else {
+        $message = "Please fill in all fields.";
+    }
+}
+
+/* DISPLAY CLASSES */
 $result = mysqli_query($conn, "SELECT * FROM classes");
 ?>
 
@@ -23,8 +85,6 @@ $result = mysqli_query($conn, "SELECT * FROM classes");
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Classes</title>
-
-    <!-- Use the same stylesheet as the homepage -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -45,9 +105,7 @@ $result = mysqli_query($conn, "SELECT * FROM classes");
             <a href="submissions.php">Submissions</a>
         </nav>
 
-        <a href="#" class="cs-header-button">
-            Login
-        </a>
+        <a href="#" class="cs-header-button">Login</a>
 
     </div>
 </header>
@@ -57,38 +115,76 @@ $result = mysqli_query($conn, "SELECT * FROM classes");
     <h2>Manage Classes</h2>
 
     <p>
-        Create and view classes for the Assignment Grader System.
+        Create, view, edit, and delete classes for the Assignment Grader System.
     </p>
+
+    <?php if (!empty($message)) { ?>
+        <p><strong><?php echo $message; ?></strong></p>
+    <?php } ?>
 
     <div class="form-box">
 
-        <h3>Add New Class</h3>
+        <?php if ($edit_class) { ?>
 
-        <form method="POST">
+            <h3>Edit Class</h3>
 
-            <label>Class Name</label>
+            <form method="POST">
 
-            <input
-                type="text"
-                name="class_name"
-                placeholder="Example: ICS 499"
-                required
-            >
+                <input type="hidden" name="id" value="<?php echo $edit_class['id']; ?>">
 
-            <label>Instructor</label>
+                <label>Class Name</label>
+                <input
+                    type="text"
+                    name="class_name"
+                    value="<?php echo $edit_class['class_name']; ?>"
+                    required
+                >
 
-            <input
-                type="text"
-                name="instructor_name"
-                placeholder="Example: Professor Jasthi"
-                required
-            >
+                <label>Instructor</label>
+                <input
+                    type="text"
+                    name="instructor_name"
+                    value="<?php echo $edit_class['instructor_name']; ?>"
+                    required
+                >
 
-            <button type="submit" name="add_class">
-                Add Class
-            </button>
+                <button type="submit" name="update_class">
+                    Update Class
+                </button>
 
-        </form>
+                <a href="classes.php">Cancel</a>
+
+            </form>
+
+        <?php } else { ?>
+
+            <h3>Add New Class</h3>
+
+            <form method="POST">
+
+                <label>Class Name</label>
+                <input
+                    type="text"
+                    name="class_name"
+                    placeholder="Example: ICS 499"
+                    required
+                >
+
+                <label>Instructor</label>
+                <input
+                    type="text"
+                    name="instructor_name"
+                    placeholder="Example: Professor Jasthi"
+                    required
+                >
+
+                <button type="submit" name="add_class">
+                    Add Class
+                </button>
+
+            </form>
+
+        <?php } ?>
 
     </div>
 
@@ -101,6 +197,7 @@ $result = mysqli_query($conn, "SELECT * FROM classes");
             <tr>
                 <th>Class Name</th>
                 <th>Instructor</th>
+                <th>Actions</th>
             </tr>
 
             <?php while ($row = mysqli_fetch_assoc($result)) { ?>
@@ -108,6 +205,16 @@ $result = mysqli_query($conn, "SELECT * FROM classes");
                 <tr>
                     <td><?php echo $row['class_name']; ?></td>
                     <td><?php echo $row['instructor_name']; ?></td>
+                    <td>
+                        <a href="classes.php?edit=<?php echo $row['id']; ?>">Edit</a>
+                        |
+                        <a 
+                            href="classes.php?delete=<?php echo $row['id']; ?>"
+                            onclick="return confirm('Are you sure you want to delete this class?');"
+                        >
+                            Delete
+                        </a>
+                    </td>
                 </tr>
 
             <?php } ?>
