@@ -112,6 +112,7 @@ $rubrics = mysqli_query($conn, "
             <a href="assignments.php">Assignments</a>
             <a href="rubrics.php">Rubrics</a>
             <a href="submissions.php">Submissions</a>
+            <a href="grades.php">Grades</a>
         </nav>
 
         <a href="#" class="cs-header-button">Login</a>
