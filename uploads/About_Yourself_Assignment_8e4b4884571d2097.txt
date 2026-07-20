@@ -1,0 +1,16 @@
+﻿About Yourself Assignment
+
+
+Name: Jacob Vang
+
+
+Hello, my name is Jacob Vang. I am a Computer Science major at Metropolitan State University.
+
+
+I enjoy web development, programming, database design, and learning new technologies. I also enjoy playing golf and improving my software development skills.
+
+
+One of my goals is to become a software engineer and build applications that solve real-world problems. This Assignment Grader project has helped me learn how to connect PHP, MySQL, HTML, CSS, and JavaScript into one complete web application.
+
+
+I believe I worked hard on this assignment by explaining my background, interests, and future goals clearly.

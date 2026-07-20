@@ -107,6 +107,72 @@ function assignmentExists(mysqli $conn, int $assignmentId): bool
 }
 
 /*
+ * Save an uploaded assignment file and return its relative path.
+ */
+function saveUploadedFile(string $fieldName): ?string
+{
+    if (
+        !isset($_FILES[$fieldName])
+        || $_FILES[$fieldName]['error'] === UPLOAD_ERR_NO_FILE
+    ) {
+        return null;
+    }
+
+    $file = $_FILES[$fieldName];
+
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        throw new RuntimeException('The assignment file could not be uploaded.');
+    }
+
+    if ($file['size'] > 10 * 1024 * 1024) {
+        throw new RuntimeException('The assignment file must be 10 MB or smaller.');
+    }
+
+    $originalName = basename((string) $file['name']);
+    $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+    $allowedExtensions = ['pdf', 'doc', 'docx', 'txt'];
+
+    if (!in_array($extension, $allowedExtensions, true)) {
+        throw new RuntimeException(
+            'Only PDF, DOC, DOCX, and TXT files are allowed.'
+        );
+    }
+
+    $uploadDirectory = __DIR__ . '/uploads';
+
+    if (!is_dir($uploadDirectory) && !mkdir($uploadDirectory, 0755, true)) {
+        throw new RuntimeException('The uploads folder could not be created.');
+    }
+
+    $safeBaseName = preg_replace(
+        '/[^A-Za-z0-9_-]/',
+        '_',
+        pathinfo($originalName, PATHINFO_FILENAME)
+    );
+
+    $safeBaseName = trim((string) $safeBaseName, '_');
+
+    if ($safeBaseName === '') {
+        $safeBaseName = 'assignment';
+    }
+
+    $storedName = $safeBaseName
+        . '_'
+        . bin2hex(random_bytes(8))
+        . '.'
+        . $extension;
+
+    $relativePath = 'uploads/' . $storedName;
+    $destination = __DIR__ . '/' . $relativePath;
+
+    if (!move_uploaded_file($file['tmp_name'], $destination)) {
+        throw new RuntimeException('The assignment file could not be saved.');
+    }
+
+    return $relativePath;
+}
+
+/*
  * Get flash message after redirecting.
  */
 $message = $_SESSION['flash_message'] ?? '';
@@ -143,6 +209,14 @@ if (
     );
 
     $submissionText = trim($_POST['submission_text'] ?? '');
+    $filePath = null;
+
+    try {
+        $filePath = saveUploadedFile('submission_file');
+    } catch (RuntimeException $exception) {
+        setFlashMessage($exception->getMessage(), 'error');
+        redirectToSubmissions();
+    }
 
     if (!$studentId || $studentId < 1) {
         setFlashMessage(
@@ -162,9 +236,9 @@ if (
         redirectToSubmissions();
     }
 
-    if ($submissionText === '') {
+    if ($submissionText === '' && $filePath === null) {
         setFlashMessage(
-            'Please enter the submission text.',
+            'Please enter submission text or upload an assignment file.',
             'error'
         );
 
@@ -203,8 +277,9 @@ if (
         'INSERT INTO submissions (
             student_id,
             assignment_id,
-            submission_text
-        ) VALUES (?, ?, ?)'
+            submission_text,
+            file_path
+        ) VALUES (?, ?, ?, ?)'
     );
 
     if (!$stmt) {
@@ -223,10 +298,11 @@ if (
 
     mysqli_stmt_bind_param(
         $stmt,
-        'iis',
+        'iiss',
         $studentId,
         $assignmentId,
-        $submissionText
+        $submissionText,
+        $filePath
     );
 
     if (mysqli_stmt_execute($stmt)) {
@@ -234,6 +310,10 @@ if (
             'Submission added successfully.'
         );
     } else {
+        if ($filePath !== null && is_file(__DIR__ . '/' . $filePath)) {
+            unlink(__DIR__ . '/' . $filePath);
+        }
+
         error_log(
             'Add submission error: '
             . mysqli_stmt_error($stmt)
@@ -280,6 +360,21 @@ if (
         redirectToSubmissions();
     }
 
+    $existingFilePath = null;
+    $fileStmt = mysqli_prepare(
+        $conn,
+        'SELECT file_path FROM submissions WHERE id = ?'
+    );
+
+    if ($fileStmt) {
+        mysqli_stmt_bind_param($fileStmt, 'i', $submissionId);
+        mysqli_stmt_execute($fileStmt);
+        $fileResult = mysqli_stmt_get_result($fileStmt);
+        $fileRow = mysqli_fetch_assoc($fileResult);
+        $existingFilePath = $fileRow['file_path'] ?? null;
+        mysqli_stmt_close($fileStmt);
+    }
+
     $stmt = mysqli_prepare(
         $conn,
         'DELETE FROM submissions WHERE id = ?'
@@ -307,6 +402,13 @@ if (
 
     if (mysqli_stmt_execute($stmt)) {
         if (mysqli_stmt_affected_rows($stmt) > 0) {
+            if (
+                $existingFilePath !== null
+                && is_file(__DIR__ . '/' . $existingFilePath)
+            ) {
+                unlink(__DIR__ . '/' . $existingFilePath);
+            }
+
             setFlashMessage(
                 'Submission deleted successfully.'
             );
@@ -395,15 +497,6 @@ if (
         redirectToSubmissions($submissionId);
     }
 
-    if ($submissionText === '') {
-        setFlashMessage(
-            'Please enter the submission text.',
-            'error'
-        );
-
-        redirectToSubmissions($submissionId);
-    }
-
     if (strlen($submissionText) > 50000) {
         setFlashMessage(
             'Submission text must be 50,000 characters or fewer.',
@@ -431,12 +524,48 @@ if (
         redirectToSubmissions($submissionId);
     }
 
+    $existingFilePath = null;
+    $existingStmt = mysqli_prepare(
+        $conn,
+        'SELECT file_path FROM submissions WHERE id = ?'
+    );
+
+    if ($existingStmt) {
+        mysqli_stmt_bind_param($existingStmt, 'i', $submissionId);
+        mysqli_stmt_execute($existingStmt);
+        $existingResult = mysqli_stmt_get_result($existingStmt);
+        $existingRow = mysqli_fetch_assoc($existingResult);
+        $existingFilePath = $existingRow['file_path'] ?? null;
+        mysqli_stmt_close($existingStmt);
+    }
+
+    $newFilePath = null;
+
+    try {
+        $newFilePath = saveUploadedFile('submission_file');
+    } catch (RuntimeException $exception) {
+        setFlashMessage($exception->getMessage(), 'error');
+        redirectToSubmissions($submissionId);
+    }
+
+    $filePath = $newFilePath ?? $existingFilePath;
+
+    if ($submissionText === '' && $filePath === null) {
+        setFlashMessage(
+            'Please enter submission text or upload an assignment file.',
+            'error'
+        );
+
+        redirectToSubmissions($submissionId);
+    }
+
     $stmt = mysqli_prepare(
         $conn,
         'UPDATE submissions
          SET student_id = ?,
              assignment_id = ?,
-             submission_text = ?
+             submission_text = ?,
+             file_path = ?
          WHERE id = ?'
     );
 
@@ -456,18 +585,31 @@ if (
 
     mysqli_stmt_bind_param(
         $stmt,
-        'iisi',
+        'iissi',
         $studentId,
         $assignmentId,
         $submissionText,
+        $filePath,
         $submissionId
     );
 
     if (mysqli_stmt_execute($stmt)) {
+        if (
+            $newFilePath !== null
+            && $existingFilePath !== null
+            && $existingFilePath !== $newFilePath
+            && is_file(__DIR__ . '/' . $existingFilePath)
+        ) {
+            unlink(__DIR__ . '/' . $existingFilePath);
+        }
+
         setFlashMessage(
             'Submission updated successfully.'
         );
     } else {
+        if ($newFilePath !== null && is_file(__DIR__ . '/' . $newFilePath)) {
+            unlink(__DIR__ . '/' . $newFilePath);
+        }
         error_log(
             'Update submission error: '
             . mysqli_stmt_error($stmt)
@@ -503,6 +645,7 @@ if (isset($_GET['edit'])) {
                 student_id,
                 assignment_id,
                 submission_text,
+                file_path,
                 submitted_at,
                 status
              FROM submissions
@@ -601,6 +744,7 @@ $submissions = mysqli_query(
         submissions.student_id,
         submissions.assignment_id,
         submissions.submission_text,
+        submissions.file_path,
         submissions.submitted_at,
         submissions.status,
         students.first_name,
@@ -700,7 +844,7 @@ if (!$submissions) {
 
                 <h2>Edit Submission</h2>
 
-                <form method="POST" action="submissions.php">
+                <form method="POST" action="submissions.php" enctype="multipart/form-data">
 
                     <input
                         type="hidden"
@@ -833,10 +977,45 @@ if (!$submissions) {
                             name="submission_text"
                             rows="10"
                             maxlength="50000"
-                            required
                         ><?php echo escape(
                             $editSubmission['submission_text']
                         ); ?></textarea>
+
+                        <small>
+                            Enter text, upload a file, or use both.
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-submission-file">
+                            Replace Assignment File
+                        </label>
+
+                        <input
+                            type="file"
+                            id="edit-submission-file"
+                            name="submission_file"
+                            accept=".pdf,.doc,.docx,.txt"
+                        >
+
+                        <?php if (!empty($editSubmission['file_path'])): ?>
+                            <p>
+                                Current file:
+                                <a
+                                    href="<?php echo escape(
+                                        $editSubmission['file_path']
+                                    ); ?>"
+                                    target="_blank"
+                                    rel="noopener"
+                                >
+                                    View uploaded assignment
+                                </a>
+                            </p>
+                        <?php endif; ?>
+
+                        <small>
+                            Optional. Maximum size: 10 MB.
+                        </small>
                     </div>
 
                     <div class="form-actions">
@@ -868,7 +1047,7 @@ if (!$submissions) {
                     && mysqli_num_rows($assignments) > 0
                 ): ?>
 
-                    <form method="POST" action="submissions.php">
+                    <form method="POST" action="submissions.php" enctype="multipart/form-data">
 
                         <input
                             type="hidden"
@@ -974,8 +1153,28 @@ if (!$submissions) {
                                 rows="10"
                                 maxlength="50000"
                                 placeholder="Paste the student assignment submission here..."
-                                required
                             ></textarea>
+
+                            <small>
+                                Enter text, upload a file, or use both.
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="submission-file">
+                                Upload Assignment File
+                            </label>
+
+                            <input
+                                type="file"
+                                id="submission-file"
+                                name="submission_file"
+                                accept=".pdf,.doc,.docx,.txt"
+                            >
+
+                            <small>
+                                PDF, DOC, DOCX, or TXT. Maximum size: 10 MB.
+                            </small>
                         </div>
 
                         <button
@@ -1066,11 +1265,31 @@ if (!$submissions) {
                                     </td>
 
                                     <td class="submission-cell">
-                                        <?php echo nl2br(
-                                            escape(
-                                                $row['submission_text']
-                                            )
-                                        ); ?>
+                                        <?php if (
+                                            trim((string) $row['submission_text']) !== ''
+                                        ): ?>
+                                            <div>
+                                                <?php echo nl2br(
+                                                    escape(
+                                                        $row['submission_text']
+                                                    )
+                                                ); ?>
+                                            </div>
+                                        <?php endif; ?>
+
+                                        <?php if (!empty($row['file_path'])): ?>
+                                            <div>
+                                                <a
+                                                    href="<?php echo escape(
+                                                        $row['file_path']
+                                                    ); ?>"
+                                                    target="_blank"
+                                                    rel="noopener"
+                                                >
+                                                    View uploaded assignment
+                                                </a>
+                                            </div>
+                                        <?php endif; ?>
                                     </td>
 
                                     <td>
@@ -1100,45 +1319,52 @@ if (!$submissions) {
 
                                     <td class="action-buttons">
 
-                                        <a
-                                            href="submissions.php?edit=<?php
-                                            echo (int) $row['id'];
-                                            ?>"
-                                            class="edit-button"
-                                        >
-                                            Edit
-                                        </a>
+                                      <a
+    href="submissions.php?edit=<?php
+    echo (int) $row['id'];
+    ?>"
+    class="edit-button"
+>
+    Edit
+</a>
 
-                                        <form
-                                            method="POST"
-                                            action="submissions.php"
-                                            class="inline-form"
-                                            onsubmit="return confirm(
-                                                'Are you sure you want to delete this submission?'
-                                            );"
-                                        >
-                                            <input
-                                                type="hidden"
-                                                name="csrf_token"
-                                                value="<?php echo escape(
-                                                    $_SESSION['csrf_token']
-                                                ); ?>"
-                                            >
+<a
+    href="grade_submission.php?id=<?php echo (int) $row['id']; ?>"
+    class="edit-button"
+>
+    Grade
+</a>
 
-                                            <input
-                                                type="hidden"
-                                                name="submission_id"
-                                                value="<?php echo (int) $row['id']; ?>"
-                                            >
+<form
+    method="POST"
+    action="submissions.php"
+    class="inline-form"
+    onsubmit="return confirm(
+        'Are you sure you want to delete this submission?'
+    );"
+>
+    <input
+        type="hidden"
+        name="csrf_token"
+        value="<?php echo escape(
+            $_SESSION['csrf_token']
+        ); ?>"
+    >
 
-                                            <button
-                                                type="submit"
-                                                name="delete_submission"
-                                                class="delete-button"
-                                            >
-                                                Delete
-                                            </button>
-                                        </form>
+    <input
+        type="hidden"
+        name="submission_id"
+        value="<?php echo (int) $row['id']; ?>"
+    >
+
+    <button
+        type="submit"
+        name="delete_submission"
+        class="delete-button"
+    >
+        Delete
+    </button>
+</form>
 
                                     </td>
                                 </tr>

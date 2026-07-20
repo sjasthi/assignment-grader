@@ -1,3 +1,8 @@
+<?php
+declare(strict_types=1);
+
+require_once 'auth.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,15 +22,36 @@
 
         <nav class="cs-nav">
             <a href="index.php">Home</a>
-            <a href="classes.php">Classes</a>
-            <a href="students.php">Students</a>
-            <a href="assignments.php">Assignments</a>
-            <a href="rubrics.php">Rubrics</a>
-            <a href="submissions.php">Submissions</a>
-            <a href="grades.php">Grades</a>
+
+            <?php if (is_logged_in()): ?>
+                <a href="classes.php">Classes</a>
+                <a href="students.php">Students</a>
+                <a href="assignments.php">Assignments</a>
+                <a href="rubrics.php">Rubrics</a>
+                <a href="submissions.php">Submissions</a>
+                <a href="grades.php">Grades</a>
+            <?php endif; ?>
         </nav>
 
-        <a href="#" class="cs-header-button">Login</a>
+        <?php if (is_logged_in()): ?>
+
+            <a href="logout.php" class="cs-header-button">
+                Logout
+            </a>
+
+        <?php else: ?>
+
+            <div class="cs-header-buttons">
+                <a href="login.php" class="cs-header-button">
+                    Login
+                </a>
+
+                <a href="setup_admin.php" class="cs-header-button">
+                    Create Account
+                </a>
+            </div>
+
+        <?php endif; ?>
 
     </div>
 </header>
@@ -44,15 +70,40 @@
                 Assignment Grader System
             </h1>
 
-            <p class="cs-text">
-                This system helps instructors manage classes, students,
-                assignments, rubrics, and provide feedback on student
-                submissions.
-            </p>
+            <?php if (is_logged_in()): ?>
 
-            <a href="classes.php" class="cs-button-solid">
-                Get Started
-            </a>
+                <p class="cs-text">
+                    Welcome,
+                    <?php echo htmlspecialchars(current_user_name(), ENT_QUOTES, 'UTF-8'); ?>.
+                    You are logged in as
+                    <?php echo htmlspecialchars(current_user_role(), ENT_QUOTES, 'UTF-8'); ?>.
+                </p>
+
+                <a href="classes.php" class="cs-button-solid">
+                    Open System
+                </a>
+
+            <?php else: ?>
+
+                <p class="cs-text">
+                    This system helps instructors manage classes, students,
+                    assignments, rubrics, and provide feedback on student
+                    submissions.
+                </p>
+
+                <div class="cs-button-group">
+
+                    <a href="login.php" class="cs-button-solid">
+                        Login
+                    </a>
+
+                    <a href="setup_admin.php" class="cs-button-solid">
+                        Create Account
+                    </a>
+
+                </div>
+
+            <?php endif; ?>
 
         </div>
 
@@ -86,11 +137,11 @@
     <picture class="cs-background">
 
         <source
-            media="(max-width: 600px)"
+            media="(max-width:600px)"
             srcset="https://images.unsplash.com/photo-1552664730-d307ca884978?w=800">
 
         <source
-            media="(min-width: 601px)"
+            media="(min-width:601px)"
             srcset="https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600">
 
         <img
@@ -102,7 +153,7 @@
 </section>
 
 <footer id="cs-footer-1292">
-    <div class="cs-container">      
+    <div class="cs-container">
 
         <div class="cs-logo-group">
             <a class="cs-footer-logo" href="index.php">
@@ -110,7 +161,8 @@
             </a>
 
             <p class="cs-text">
-                A web app for managing classes, students, assignments, rubrics, submissions, and feedback.
+                A web app for managing classes, students, assignments,
+                rubrics, submissions, and feedback.
             </p>
 
             <a href="mailto:info@assignmentgrader.com" class="cs-link">
@@ -146,7 +198,9 @@
     <div class="cs-bottom">
         <span class="cs-copyright">
             Copyright © 2026.
-            <a class="cs-copyright-link" href="index.php">Assignment Grader.</a>
+            <a class="cs-copyright-link" href="index.php">
+                Assignment Grader.
+            </a>
             All Rights Reserved.
         </span>
 
